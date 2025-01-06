@@ -20,6 +20,7 @@ pkgs.mkShell {
   buildInputs = with pkgs.python3Packages; [
     python
     pyfirmata2
+    pika
   ];
 
   name = "python";
