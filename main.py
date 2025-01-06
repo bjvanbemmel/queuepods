@@ -6,6 +6,7 @@ queue_population: int = 0
 board: Arduino = Arduino('/dev/ttyACM0')
 board.samplingOn(100)
 
+
 class Lights():
     RED: Pin = board.digital[12]
     YELLOW: Pin = board.digital[11]
@@ -54,10 +55,10 @@ Buttons.ENTRY.value.register_callback(entry_callback)
 Buttons.EXIT.value.register_callback(exit_callback)
 
 previous_population: int = 0
+Lights.update()
 while True:
     if previous_population != queue_population:
+        Lights.update()
         print(f"New queue population: {queue_population}")
 
     previous_population = queue_population
-
-    Lights.update()

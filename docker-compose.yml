@@ -1,0 +1,29 @@
+services:
+  python:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    networks:
+      - queue-monitoring
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+    volumes:
+      - ./:/app
+    privileged: true
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:4.0.5-management
+    networks:
+      - queue-monitoring
+    env_file: .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${MQ_USERNAME:-rabbitmq}
+      - RABBITMQ_DEFAULT_PASS=${MQ_PASSWORD:-rabbitmq}
+    ports:
+      - 5672:${AMQP_PORT:-5672}
+      - 15672:${MQ_UI_PORT:-15672}
+      
+
+networks:
+  queue-monitoring:
