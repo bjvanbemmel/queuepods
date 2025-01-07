@@ -37,6 +37,8 @@ class Events(Enum):
     QUEUE_FULL            = "queue_full"
     POPULATION_MONITORING = "population_monitoring"
 
+previous_event: Events = Events.QUEUE_EMPTY
+
 class Logger():
     def serialize(self, event: Events, level: Levels, body: str) -> str:
         return json.dumps({
@@ -49,17 +51,17 @@ class Logger():
 
     def info(self, event: Events, body: str, publish_to_queue: bool = False) -> None:
         message = self.serialize(event=event, level=Levels.INFO, body=body)
-        if publish_to_queue:
+        if publish_to_queue and previous_event != event:
             message_queue.append(message)
 
     def warn(self, event: Events, body: str, publish_to_queue: bool = False) -> None:
         message = self.serialize(event=event, level=Levels.WARN, body=body)
-        if publish_to_queue:
+        if publish_to_queue and previous_event != event:
             message_queue.append(message)
 
     def error(self, event: Events, body: str, publish_to_queue: bool = False) -> None:
         message = self.serialize(event=event, level=Levels.ERROR, body=body)
-        if publish_to_queue:
+        if publish_to_queue and previous_event != event:
             message_queue.append(message)
 
 logger = Logger()
@@ -79,6 +81,7 @@ class Buttons(Enum):
     EXIT = board.get_pin('d:2:u')
 
 def update_state() -> None:
+    global previous_event
     global queue_population
     if queue_population < 0:
         queue_population = 0
@@ -86,15 +89,19 @@ def update_state() -> None:
     Lights.reset()
     if queue_population == 0:
         logger.warn(event=Events.QUEUE_EMPTY, body=f"There are no people present within the queue for attraction with name {attraction_name}.", publish_to_queue=True)
+        previous_event = Events.QUEUE_EMPTY
         Lights.GREEN.write(1)
     elif queue_population >= queue_max_capacity:
         logger.warn(event=Events.QUEUE_FULL, body=f"The queue for attraction with name {attraction_name} has reached full occupancy.", publish_to_queue=True)
+        previous_event = Events.QUEUE_FULL
         Lights.RED.write(1)
     elif queue_population / queue_max_capacity * 100 < 70:
         logger.info(event=Events.QUEUE_ALMOST_EMPTY, body=f"The queue for attraction with name {attraction_name} has an occupancy of less than 70%.", publish_to_queue=True)
+        previous_event = Events.QUEUE_ALMOST_EMPTY
         Lights.GREEN.write(1)
     elif queue_population / queue_max_capacity* 100 > 70:
         logger.warn(event=Events.QUEUE_ALMOST_FULL, body=f"The queue for attraction with name {attraction_name} has an occupancy of at least 70%.", publish_to_queue=True)
+        previous_event = Events.QUEUE_ALMOST_FULL
         Lights.YELLOW.write(1)
 
 def entry_callback(value: bool) -> None:

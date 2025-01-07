@@ -8,8 +8,8 @@ services:
       - RABBITMQ_DEFAULT_USER=${MQ_USERNAME:-rabbitmq}
       - RABBITMQ_DEFAULT_PASS=${MQ_PASSWORD:-rabbitmq}
     ports:
-      - 5672:${AMQP_PORT:-5672}
-      - 15672:${MQ_UI_PORT:-15672}
+      - ${AMQP_PORT:-5672}:5672
+      - ${MQ_UI_PORT:-15672}:15672
     restart: unless-stopped
 
   python:
@@ -33,7 +33,7 @@ services:
     networks:
       - queue-monitoring
     ports:
-     - 5173:${DASHBOARD_PORT:-5173}
+      - ${DASHBOARD_PORT:-5173}:5173
     restart: unless-stopped
       
   api:
@@ -42,9 +42,11 @@ services:
       context: ./
     networks:
       - queue-monitoring
+    volumes:
+      - ./api:/app
     env_file: .env
     ports:
-      - 80:${API_PORT:-8888}
+      - ${API_PORT:-8888}:80
     restart: unless-stopped
 
 networks:
