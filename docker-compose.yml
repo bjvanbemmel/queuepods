@@ -16,6 +16,8 @@ services:
     build:
       dockerfile: ./python/Dockerfile
       context: ./
+    depends_on:
+      - rabbitmq
     env_file: .env
     networks:
       - queue-monitoring
@@ -23,23 +25,13 @@ services:
       - /dev/ttyACM0:/dev/ttyACM0
     privileged: true
     restart: unless-stopped
-
-  dashboard:
-    build:
-      dockerfile: ./web/Dockerfile
-      context: ./
-    volumes:
-      - ./web:/app
-    networks:
-      - queue-monitoring
-    ports:
-      - ${DASHBOARD_PORT:-5173}:5173
-    restart: unless-stopped
       
   api:
     build:
       dockerfile: ./api/Dockerfile
       context: ./
+    depends_on:
+      - rabbitmq
     networks:
       - queue-monitoring
     volumes:
@@ -47,6 +39,20 @@ services:
     env_file: .env
     ports:
       - ${API_PORT:-8888}:80
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      dockerfile: ./web/Dockerfile
+      context: ./
+    depends_on:
+      - api
+    volumes:
+      - ./web:/app
+    networks:
+      - queue-monitoring
+    ports:
+      - ${DASHBOARD_PORT:-5173}:5173
     restart: unless-stopped
 
 networks:
