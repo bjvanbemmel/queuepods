@@ -10,7 +10,7 @@ import pika
 from pyfirmata2.util import os
 
 queue_population: int = 0
-queue_max_capacity: int = 5
+queue_max_capacity: int = int(os.environ['QUEUE_MAX_CAPACITY'])
 attraction_name: str = os.environ['ATTRACTION_NAME']
 
 board: Arduino = Arduino('/dev/ttyACM0')
@@ -99,7 +99,7 @@ def update_state() -> None:
         logger.info(event=Events.QUEUE_ALMOST_EMPTY, body=f"The queue for attraction with name {attraction_name} has an occupancy of less than 70%.", publish_to_queue=True)
         previous_event = Events.QUEUE_ALMOST_EMPTY
         Lights.GREEN.write(1)
-    elif queue_population / queue_max_capacity* 100 > 70:
+    elif queue_population / queue_max_capacity* 100 >= 70:
         logger.warn(event=Events.QUEUE_ALMOST_FULL, body=f"The queue for attraction with name {attraction_name} has an occupancy of at least 70%.", publish_to_queue=True)
         previous_event = Events.QUEUE_ALMOST_FULL
         Lights.YELLOW.write(1)
