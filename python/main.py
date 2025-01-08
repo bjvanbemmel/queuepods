@@ -125,9 +125,7 @@ def exit_callback(value: bool) -> None:
 Buttons.ENTRY.value.register_callback(entry_callback)
 Buttons.EXIT.value.register_callback(exit_callback)
 
-previous_population: int = 0
-update_state()
-
+previous_population: int = -1
 monitoring_previous_timestamp: float = time.time()
 message_queue_previous_timestamp: float = time.time()
 while True:
