@@ -5,6 +5,7 @@ from pika.adapters import BlockingConnection
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.credentials import PlainCredentials
 from pyfirmata2 import Arduino, Pin, time
+import pytz
 from enum import Enum
 import pika
 from pyfirmata2.util import os
@@ -37,7 +38,7 @@ class Events(Enum):
     QUEUE_FULL            = "queue_full"
     POPULATION_MONITORING = "population_monitoring"
 
-previous_event: Events = Events.QUEUE_EMPTY
+previous_event: Events | None = None
 
 class Logger():
     def serialize(self, event: Events, level: Levels, body: str) -> str:
@@ -45,7 +46,7 @@ class Logger():
             "attraction": attraction_name,
             "event": event.value,
             "level": level.value,
-            "timestamp": datetime.datetime.now().isoformat(),
+            "timestamp": datetime.datetime.now(pytz.timezone('UTC')).isoformat(),
             "value": body,
         })
 
@@ -130,7 +131,7 @@ monitoring_previous_timestamp: float = time.time()
 message_queue_previous_timestamp: float = time.time()
 while True:
     current_timestamp: float = time.time()
-    if current_timestamp - monitoring_previous_timestamp > 3:
+    if current_timestamp - monitoring_previous_timestamp > 1:
         monitoring_previous_timestamp = current_timestamp
         logger.info(event=Events.POPULATION_MONITORING, body=str(queue_population), publish_to_queue=True)
 

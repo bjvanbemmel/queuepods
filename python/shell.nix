@@ -21,6 +21,7 @@ pkgs.mkShell {
     python
     pyfirmata2
     pika
+    pytz
   ];
 
   name = "python";
