@@ -1,4 +1,5 @@
-import HomeView from '@/views/HomeView.vue'
+import MessageView from '@/views/MessageView.vue'
+import PopulationView from '@/views/PopulationView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -6,8 +7,13 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      name: 'Populations',
+      component: PopulationView,
+    },
+    {
+      path: '/messages',
+      name: 'Messages',
+      component: MessageView,
     },
   ],
 })

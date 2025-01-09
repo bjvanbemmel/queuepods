@@ -19,17 +19,17 @@ import (
 )
 
 type Message struct {
-	Event      string
-	Attraction string
-	Timestamp  time.Time
-	Value      string
+	Event      string    `json:"event"`
+	Attraction string    `json:"attraction"`
+	Timestamp  time.Time `json:"timestamp"`
+	Value      string    `json:"value"`
 }
 
 type Population struct {
-	Attraction string
-	Population int
-	Capacity   int
-	State      string
+	Attraction string `json:"attraction"`
+	Population int    `json:"population"`
+	Capacity   int    `json:"capacity"`
+	State      string `json:"state"`
 }
 
 const (
@@ -108,9 +108,10 @@ func main() {
 					slog.Error(fmt.Sprintf("Could not convert population value to int, err: `%s`", err.Error()))
 				}
 				attraction.Population = population
+			} else {
+				attraction.State = decodedMessage.Event
 			}
 
-			attraction.State = decodedMessage.Event
 			actual_queue_populations[decodedMessage.Attraction] = attraction
 
 			if len(message_history) == 10000 {
@@ -166,9 +167,17 @@ func main() {
 		}
 
 		from_timestamp, _ := time.Parse(time.RFC3339, r.URL.Query().Get("from"))
+		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+
+		message_history_reversed := slices.Clone(message_history)
+		slices.Reverse(message_history_reversed)
 
 		history := []Message{}
-		for _, event := range message_history {
+		for _, event := range message_history_reversed {
+			if limit > 0 && len(history) == limit {
+				break
+			}
+
 			if !from_timestamp.IsZero() && event.Timestamp.Before(from_timestamp) {
 				continue
 			}
