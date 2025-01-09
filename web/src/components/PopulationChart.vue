@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip } from 'chart.js';
-import { computed, onMounted, ref, type Ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, type Ref } from 'vue';
 import { usePopulationStore } from '@/stores/populations';
 import { Events, type Message } from '@/types/models';
 import axios from 'axios';
@@ -32,9 +32,14 @@ const populations = usePopulationStore();
 const timestamps = computed<Array<string>>(() => populations.history.flatMap(x => new Date(x.timestamp).toLocaleTimeString('nl-NL')));
 const values = computed<Array<number>>(() => populations.history.flatMap(x => +x.value));
 const key: Ref<number> = ref(0);
+const pollInterval: Ref<number> = ref(0);
+
+onUnmounted(() => {
+  clearInterval(pollInterval.value);
+});
 
 onMounted(async () => {
-  setInterval(async () => {
+  pollInterval.value = setInterval(async () => {
     populations.setHistory(await fetchHistory())
     key.value += 1
   }, 1000);
