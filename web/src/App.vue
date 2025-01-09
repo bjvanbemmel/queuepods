@@ -68,7 +68,11 @@ watch(pollingRate, async (rate: number) => {
   pollingTimeout.value = setInterval(async () => {
     await updateData();
   }, rate);
-})
+});
+
+watch(messages.params, async () => {
+  await updateData();
+});
 
 async function updateData(): Promise<void> {
   populations.set(await fetchPopulations());

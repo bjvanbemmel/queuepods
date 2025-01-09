@@ -22,13 +22,35 @@
             >{{filter.name}}</label>
           </div>
         </div>
-        <div class="flex gap-2 items-center">
-          <label>Limit</label>
+        <div class="w-full flex gap-2 items-center">
+          <label>Limit:</label>
           <input
-            class="w-32"
+            class="w-full bg-gray-50 border border-gray-400 p-1 rounded"
             type="number"
             v-model="limit.value"
           />
+        </div>
+        <div class="w-full flex gap-2 items-center">
+          <label>Attraction:</label>
+          <select
+            class="w-full p-1 border border-gray-400 rounded focus:border-blue-400 bg-gray-50 hover:bg-gray-200"
+            v-model="attractionFilter.value"
+          >
+            <option
+              v-for="attraction, key in attractions"
+              :key="key"
+              :value="attraction"
+              class="w-min text-ellipsis"
+            >
+              {{ attraction }}
+            </option>
+          </select>
+          <FormButton
+            title="Clear attraction filter"
+            @click="() => attractionFilter.value = ''"
+          >
+            <XMarkIcon class="h-5" />
+          </FormButton>
         </div>
       </form>
     </div>
@@ -62,16 +84,30 @@
 </template>
 
 <script setup lang="ts">
+import FormButton from '@/components/FormButton.vue';
 import { useMessageStore } from '@/stores/messages';
 import { Events, Params, type Param } from '@/types/models';
-import { ref, watch, type Ref } from 'vue';
+import { XMarkIcon } from '@heroicons/vue/16/solid';
+import axios from 'axios';
+import { onMounted, ref, watch, type Ref } from 'vue';
 
 interface Filter {
   name:  Events,
   value: boolean,
 };
 
+onMounted(async () => {
+  attractions.value = await axios.get('http://localhost:8888/attractions')
+    .then(res => res.data)
+    .catch(err => {
+      console.error(err);
+      return [];
+    })
+});
+
 const messages = useMessageStore();
+const attractions: Ref<Array<string>> = ref([]);
+const attractionFilter: Ref<Param> = ref({ name: Params.ATTRACTIONS, value: '' });
 const limit: Ref<Param> = ref({
   name: Params.LIMIT,
   value: '200',
@@ -111,5 +147,9 @@ watch(filters, (newFilters) => {
 watch(limit, (newLimit: Param) => {
   messages.setParam(newLimit);
 }, { immediate: true, });
+
+watch(attractionFilter, (newAttraction: Param) => {
+  messages.setParam(newAttraction);
+}, { deep: true, });
 
 </script>

@@ -65,6 +65,13 @@ func main() {
 	}
 	defer channel.Close()
 
+	message_history = append(message_history, Message{
+		Attraction: "Robin Hood",
+		Event:      QUEUE_EMPTY,
+		Timestamp:  time.Now(),
+		Value:      "This is a seeded message",
+	})
+
 	messages, err := channel.Consume(
 		"queuepods",
 		"api",
@@ -195,6 +202,25 @@ func main() {
 		raw, err := json.Marshal(history)
 		if err != nil {
 			slog.Error(fmt.Sprintf("Could not serialize response into json, err: `%s`", err))
+			w.WriteHeader(500)
+			return
+		}
+
+		fmt.Fprint(w, string(raw))
+	})
+
+	r.Get("/attractions", func(w http.ResponseWriter, r *http.Request) {
+		var attractions []string = []string{}
+		for _, message := range message_history {
+			if !slices.Contains(attractions, message.Attraction) {
+				attractions = append(attractions, message.Attraction)
+			}
+		}
+
+		raw, err := json.Marshal(attractions)
+		if err != nil {
+			slog.Error(fmt.Sprintf("Could not serialize response into json, err: `%s`", err))
+			w.WriteHeader(500)
 			return
 		}
 
