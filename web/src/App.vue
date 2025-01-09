@@ -1,6 +1,6 @@
 <template>
   <div class="h-screen flex flex-col justify-between">
-    <nav class="w-full bg-gray-300 flex gap-4 items-center p-4">
+    <nav class="border-b border-gray-400 w-full bg-gray-300 flex gap-4 items-center p-4">
       <RouterLink to="/">Population</RouterLink>
       <RouterLink to="/messages">Messages</RouterLink>
     </nav>
