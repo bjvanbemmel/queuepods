@@ -32,7 +32,7 @@
             <td
               class="px-2 flex gap-2 items-center"
               :class="{'font-black underline': population.population > population.capacity}"
-              title="Queue population exceeds capacity"
+              :title="population.population > population.capacity ? 'Queue population exceeds capacity' : ''"
             >
               <ExclamationTriangleIcon
                 class="h-6 fill-red-600"
